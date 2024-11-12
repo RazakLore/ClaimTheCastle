@@ -74,7 +74,7 @@ namespace ClaimTheCastle
                 {
                     tileDestination = new Point(Game1.RNG.Next(2, 14), Game1.RNG.Next(1, 11));
                     isDeciding = false;
-                    Debug.WriteLine(tileDestination + " headed to!");
+                    Game1.GConsole.Good(tileDestination + " headed to!");
                 }
                  
                 m_moveChangeTimer += (float)gameTime.ElapsedGameTime.TotalSeconds;

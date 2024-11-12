@@ -51,7 +51,7 @@ namespace ClaimTheCastle
             var reader = new StreamReader(File.OpenRead(mapSource + ".txt"));
 
             int i = 0, j = 0;
-            Debug.WriteLine("Building Tilemap...");
+            Game1.GConsole.Log("Building Tilemap...");
             while (!reader.EndOfStream)
             {
                 var line = reader.ReadLine();
@@ -79,7 +79,7 @@ namespace ClaimTheCastle
                 }
                 i++;
             }
-            Debug.WriteLine("\tRead " + i + " lines and " + j + " entries per line into tilemap size + " + _tileData.Length);
+            Game1.GConsole.Log("Read " + i + " lines and " + j + " entries per line into tilemap size + " + _tileData.Length);
         }
 
         public void DestroyTile(int j, int i)
@@ -89,10 +89,10 @@ namespace ClaimTheCastle
             {
                 _realTiles[i * Dimensions + j] = null;
                 _tileData[j, i] = 0;
-                Debug.WriteLine($"Tile at ({i}, {j}) destroyed.");
+                Game1.GConsole.Log($"Tile at ({i}, {j}) destroyed.");
             }
             else
-                Debug.WriteLine($"Cannot destroy tile at ({j}, {i}) - it is not destructible.");
+                Game1.GConsole.Warn($"Cannot destroy tile at ({j}, {i}) - it is not destructible.");
         }
 
         public void Draw(SpriteBatch sb, TextureAtlas ta)

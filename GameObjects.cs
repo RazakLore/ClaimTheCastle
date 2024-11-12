@@ -59,7 +59,7 @@ namespace ClaimTheCastle
 
         private void Explode(Point bombPosition)
         {
-            Debug.WriteLine($"Bomb detonated at {bombPosition}!");
+            Game1.GConsole.Warn($"Bomb detonated at {bombPosition}!");
 
             // Call function to handle the explosion in all directions
             ExplodeInDirection(bombPosition, 0, -1);                    //Up
@@ -77,28 +77,28 @@ namespace ClaimTheCastle
             {
                 x += dx;    //Head 1 in targeted direction
                 y += dy;
-                Debug.WriteLine($"Headed in direction ({dx}, {dy})");
+                Game1.GConsole.Log($"Headed in direction ({dx}, {dy})");
 
                 // Debugging: Log the current tile coordinates and check the tile data
-                Debug.WriteLine($"Checking tile at ({x}, {y})");
+                Game1.GConsole.Log($"Checking tile at ({x}, {y})");
 
                 //Stop the explosion if it goes out of bounds
                 if (!_tileMap.IsOnMap(new Point(x, y)))     //If explosion is not on a map tile
                     break;
 
                 int tileType = _tileMap.GetTile(new Point(x, y));       //Get the type of tile the blast is on
-                Debug.WriteLine($"Tile at ({x}, {y}) is {tileType}");   // Log the type of tile
+                Game1.GConsole.Log($"Tile at ({x}, {y}) is {tileType}");   // Log the type of tile
 
                 if (tileType == 2)   //Look for tiles of type 2
                 {
-                    Debug.WriteLine($"Destroying tile at ({x}, {y})!");
+                    Game1.GConsole.Log($"Destroying tile at ({x}, {y})!");
                     _tileMap.DestroyTile(x, y);     //Destroy the destructible wall (ANIMATE THIS LATER)
                     break;                          //Stop the explosion in this direction as it has hit a wall
                 }
 
                 if (tileType == 1)   //Solid wall
                 {
-                    Debug.WriteLine($"Explosion stopped at solid wall at ({x}, {y})");
+                    Game1.GConsole.Log($"Explosion stopped at solid wall at ({x}, {y})");
                     break;                          //Stop the explosion in this direction as it has hit a wall
                 }
             }
