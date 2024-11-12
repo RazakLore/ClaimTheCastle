@@ -30,6 +30,8 @@ namespace ClaimTheCastle
         public static SpriteFont debug;
         public static Random RNG = new Random();
 
+        float recordFPS = 60; bool isRecord = true;
+
         public Game1()
         {
             _graphics = new GraphicsDeviceManager(this);
@@ -42,7 +44,7 @@ namespace ClaimTheCastle
 
         protected override void Initialize()
         {
-            cam.Position = Vector2.Zero;
+            cam.Position = new Vector2(46, 20);
             player = new Vector2 (50, 50);
 
             arenas = new List<Tilemap>();
@@ -56,10 +58,10 @@ namespace ClaimTheCastle
             }
 
             _textureAtlas = new TextureAtlas(Content.Load<Texture2D>("TextureAtlas"), 8, 6, 16, 16);
-            player1 = new Player(new Vector2(34, 17), Content.Load<Texture2D>("Wizard"), 3, 8, true);
-            player2 = new Player(new Vector2(4 * 16, 6 * 16), Content.Load<Texture2D>("Wizard"), 3, 8, false);
-            player3 = new Player(new Vector2(5 * 16, 5 * 16), Content.Load<Texture2D>("Wizard"), 3, 8, false);
-            player4 = new Player(new Vector2(7 * 16, 7 * 16), Content.Load<Texture2D>("Wizard"), 3, 8, false);
+            player1 = new Player(new Vector2(34, 17), Content.Load<Texture2D>("Actors/WizardSpriteSheet"), 4, 8, true);
+            player2 = new Player(new Vector2(4 * 16, 6 * 16), Content.Load<Texture2D>("Actors/WizardSpriteSheet"), 4, 8, false);
+            player3 = new Player(new Vector2(5 * 16, 5 * 16), Content.Load<Texture2D>("Actors/WizardSpriteSheet"), 4, 8, false);
+            player4 = new Player(new Vector2(7 * 16, 7 * 16), Content.Load<Texture2D>("Actors/WizardSpriteSheet"), 4, 8, false);
 
             debug = Content.Load<SpriteFont>("Debug");
 
@@ -110,8 +112,8 @@ namespace ClaimTheCastle
             player3.Update(gameTime, arenas[currentLevel], kb, kbOld);
             player4.Update(gameTime, arenas[currentLevel], kb, kbOld);
 
-            cam.Position.X = (-player1.Position.X + _graphics.PreferredBackBufferWidth / (2 * 3));
-            cam.Position.Y = (-player1.Position.Y + _graphics.PreferredBackBufferHeight / (2 * 3));
+            //cam.Position.X = (-player1.Position.X + _graphics.PreferredBackBufferWidth / (2 * 3));
+            //cam.Position.Y = (-player1.Position.Y + _graphics.PreferredBackBufferHeight / (2 * 3));
 
             base.Update(gameTime);
             kbOld = kb;
@@ -119,33 +121,45 @@ namespace ClaimTheCastle
 
         protected override void Draw(GameTime gameTime)
         {
+            float fps = 1 / (float)gameTime.ElapsedGameTime.TotalSeconds;
+
             GraphicsDevice.Clear(Color.Black);
 
-            _spriteBatch.Begin(SpriteSortMode.Deferred, null, SamplerState.PointClamp, null, null, null, cam.getCam());
+            _spriteBatch.Begin(SpriteSortMode.Deferred, null, SamplerState.PointClamp, null, null, null, cam.getCam()); // Original spritebatch
             _spriteBatch.Draw(back, Vector2.Zero, Color.White);
             arenas[currentLevel].Draw(_spriteBatch, _textureAtlas);
-            player1.Draw(_spriteBatch, gameTime, 16, 16);
-            _spriteBatch.DrawString(debug, bombcount.ToString(), Vector2.Zero, Color.Black);
-            _spriteBatch.End();
-
-            _spriteBatch.Begin(SpriteSortMode.Deferred, null, SamplerState.PointClamp, null, null, wizardRed, cam.getCam());
-            player2.Draw(_spriteBatch, gameTime, 16, 16);
-            _spriteBatch.End();
-
-            _spriteBatch.Begin(SpriteSortMode.Deferred, null, SamplerState.PointClamp, null, null, wizardGreen, cam.getCam());
-            player3.Draw(_spriteBatch, gameTime, 16, 16);
-            _spriteBatch.End();
-
-            _spriteBatch.Begin(SpriteSortMode.Deferred, null, SamplerState.PointClamp, null, null, wizardYellow, cam.getCam());
-            player4.Draw(_spriteBatch, gameTime, 16, 16);
-            _spriteBatch.End();
-
-            _spriteBatch.Begin(SpriteSortMode.Deferred, null, SamplerState.PointClamp, null, null, null, cam.getCam());
             for (int i = 0; i < bombs.Count; i++)
             {
                 bombs[i].Draw(_spriteBatch);
             }
-            //_spriteBatch.DrawString(debug, player1.Position.ToString(), player1.Position, Color.Green);
+            player1.Draw(_spriteBatch, gameTime, 16, 16);
+            _spriteBatch.End();
+
+            _spriteBatch.Begin(SpriteSortMode.Deferred, null, SamplerState.PointClamp, null, null, wizardRed, cam.getCam());    //Red wizard
+            player2.Draw(_spriteBatch, gameTime, 16, 16);
+            _spriteBatch.End();
+
+            _spriteBatch.Begin(SpriteSortMode.Deferred, null, SamplerState.PointClamp, null, null, wizardGreen, cam.getCam());  //Green Wizard
+            player3.Draw(_spriteBatch, gameTime, 16, 16);
+            _spriteBatch.End();
+
+            _spriteBatch.Begin(SpriteSortMode.Deferred, null, SamplerState.PointClamp, null, null, wizardYellow, cam.getCam()); //Yellow wizard
+            player4.Draw(_spriteBatch, gameTime, 16, 16);
+            _spriteBatch.End();
+
+            _spriteBatch.Begin(SpriteSortMode.Deferred, null, SamplerState.PointClamp, null, null, null, cam.getCam()); //Debug
+            //_spriteBatch.DrawString(debug, bombs.Count.ToString(), Vector2.Zero, Color.Orange);
+            //_spriteBatch.DrawString(debug, player1.Position.ToString(), player1.Position, Color.Orange);
+            _spriteBatch.DrawString(debug, fps.ToString() + "Frames when no explode", Vector2.Zero, Color.Black);
+            
+            if (fps < 58 && isRecord && bombs.Count > 0)
+            {
+                recordFPS = 1 / (float)gameTime.ElapsedGameTime.TotalSeconds;
+                //isRecord = false;
+            }
+                
+                
+            _spriteBatch.DrawString(debug, recordFPS.ToString() + "Frames when explode", new Vector2(20, 20), Color.Black);
             _spriteBatch.End();
 
             base.Draw(gameTime);

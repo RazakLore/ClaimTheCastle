@@ -23,7 +23,7 @@ namespace ClaimTheCastle
         {
             MaxBombs = 2;
             BombsPlaced = 0;
-            m_moveTrigger = 0.1f;
+            m_moveTrigger = 0.08f;
             m_moveCounter = 0;
             m_moveChangeTimer = 0;
             m_maxMoveTime = 5;
@@ -106,7 +106,7 @@ namespace ClaimTheCastle
                     {
                         moveDir = Direction.East;
                     }
-                    else if (tileDestination == Position.ToPoint())
+                    else if (tileDestination == new Point(Position.ToPoint().X / 16, Position.ToPoint().Y / 16))
                     {
                         m_moveChangeTimer = m_maxMoveTime;
                         moveDir = (Direction)Game1.RNG.Next(0, 4);

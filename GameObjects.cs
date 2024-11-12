@@ -73,9 +73,9 @@ namespace ClaimTheCastle
             int x = bombPosition.X;
             int y = bombPosition.Y;
 
-            for (int i = 0; i <= ExplosionRadius; i++)
+            for (int i = 0; i <= ExplosionRadius; i++)      // For every tile before 4
             {
-                x += dx;
+                x += dx;    //Head 1 in targeted direction
                 y += dy;
                 Debug.WriteLine($"Headed in direction ({dx}, {dy})");
 
@@ -83,15 +83,15 @@ namespace ClaimTheCastle
                 Debug.WriteLine($"Checking tile at ({x}, {y})");
 
                 //Stop the explosion if it goes out of bounds
-                if (!_tileMap.IsOnMap(new Point(x, y)))
+                if (!_tileMap.IsOnMap(new Point(x, y)))     //If explosion is not on a map tile
                     break;
 
-                int tileType = _tileMap.GetTile(new Point(x, y));
-                Debug.WriteLine($"Tile at ({x}, {y}) is {tileType}");
+                int tileType = _tileMap.GetTile(new Point(x, y));       //Get the type of tile the blast is on
+                Debug.WriteLine($"Tile at ({x}, {y}) is {tileType}");   // Log the type of tile
 
                 if (tileType == 2)   //Look for tiles of type 2
                 {
-                    Debug.WriteLine($"Destroying tile at ({x}, {y})!!!!!!!!!!!!!!!");
+                    Debug.WriteLine($"Destroying tile at ({x}, {y})!");
                     _tileMap.DestroyTile(x, y);     //Destroy the destructible wall (ANIMATE THIS LATER)
                     break;                          //Stop the explosion in this direction as it has hit a wall
                 }
@@ -102,6 +102,13 @@ namespace ClaimTheCastle
                     break;                          //Stop the explosion in this direction as it has hit a wall
                 }
             }
+        }
+
+        private void DrawDanger()   //For AI to detect what tiles are safe or not
+        {
+            //Draw a rectangle for every tile position
+            //Rectangle array, set positions to be bomb position, bombx++ for explosionradius, bombx--, bomby++ etc
+            //No need to set null as array is deleted with the cauldron?
         }
 
         public void Draw(SpriteBatch sb)

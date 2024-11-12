@@ -41,7 +41,7 @@ namespace ClaimTheCastle
 
             m_frameCount = frameCount;
             m_animFrame = 0;
-            m_sourceRect = new Rectangle(0, 0, txr.Width / m_frameCount, txr.Height / m_frameCount);
+            m_sourceRect = new Rectangle(0, 0, txr.Width / 3, txr.Height / m_frameCount);
 
             m_updateTrigger = 0;
             m_fps = fps;
@@ -57,12 +57,12 @@ namespace ClaimTheCastle
             {
                 m_updateTrigger = 0;
 
-                m_animFrame = (m_animFrame + 1) % m_frameCount;
+                m_animFrame = (m_animFrame + 1) % 3;
                 m_sourceRect.X = m_animFrame * m_sourceRect.Width;
             }
 
             m_sourceRect.Y = (int)m_facing * m_sourceRect.Height;
-            sb.Draw(m_txr, new Vector2(m_position.X, m_position.Y), /*m_sourceRect,*/ Color.White);
+            sb.Draw(m_txr, new Vector2(m_position.X, m_position.Y), m_sourceRect, Color.White);
         }
 
         public void Move(Direction moveDir)
