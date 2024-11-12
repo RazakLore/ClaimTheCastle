@@ -41,9 +41,9 @@ float4 ProcessColour(ImageData input) : COLOR
     if (colour.b > colour.r && colour.b > colour.g)
     {
         // Mix red and green to create a more balanced yellow
-        colour.r = 0.9; // Slightly reduced red value (not full saturation)
-        colour.g = 0.9; // Slightly reduced green value (to avoid brightness overload)
-        colour.b = 0.1; // Keep the blue value the same (we're turning blue to yellow)
+        colour.r = 0.8; // Slightly reduced red value (not full saturation)
+        colour.g = 0.8; // Slightly reduced green value (to avoid brightness overload)
+        colour.b = 0.0; // Keep the blue value the same (we're turning blue to yellow)
     }
 
     return colour;

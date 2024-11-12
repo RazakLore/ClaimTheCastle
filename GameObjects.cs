@@ -22,10 +22,15 @@ namespace ClaimTheCastle
         public float TimeToExplode { get; set; }
         public bool IsExploded { get; set; }
         public bool TimeToDie { get; set; }
+        public Rectangle CauldronCollision { get; set; }
+        public Rectangle?[] DangerTiles { get; set; }
         private Texture2D m_txr;
 
         private Tilemap _tileMap;   //Reference to the tile map
-        public Bomb(Point position, int explosionRadius, float timeToExplode, Tilemap tileMap, Texture2D cauldron) : base(position)
+
+        private int playerOwner;
+        public int PlayerOwner { get { return playerOwner; } }
+        public Bomb(Point position, int explosionRadius, float timeToExplode, Tilemap tileMap, Texture2D cauldron, int playerOwn) : base(position)
         {
             Position = position;
             ExplosionRadius = explosionRadius;
@@ -34,6 +39,9 @@ namespace ClaimTheCastle
             TimeToDie = false;
             _tileMap = tileMap;
             m_txr = cauldron;
+            playerOwner = playerOwn;
+            CauldronCollision = new Rectangle(position.X, position.Y, 16, 16);
+            DangerTiles = new Rectangle?[7 * 7];
         }
 
         public void Update(GameTime gameTime)
@@ -89,14 +97,14 @@ namespace ClaimTheCastle
                 int tileType = _tileMap.GetTile(new Point(x, y));       //Get the type of tile the blast is on
                 Debug.WriteLine($"Tile at ({x}, {y}) is {tileType}");   // Log the type of tile
 
-                if (tileType == 2)   //Look for tiles of type 2
+                if (tileType == 2 || tileType == 10)   //Look for tiles of type 2
                 {
                     Debug.WriteLine($"Destroying tile at ({x}, {y})!");
                     _tileMap.DestroyTile(x, y);     //Destroy the destructible wall (ANIMATE THIS LATER)
                     break;                          //Stop the explosion in this direction as it has hit a wall
                 }
 
-                if (tileType == 1)   //Solid wall
+                if (tileType == 1 || tileType == 9)   //Solid wall
                 {
                     Debug.WriteLine($"Explosion stopped at solid wall at ({x}, {y})");
                     break;                          //Stop the explosion in this direction as it has hit a wall

@@ -64,10 +64,24 @@ namespace ClaimTheCastle
                     if (_tileData[j, i] == 0)
                     {
                         do
-                            _tileData[j, i] = Game1.RNG.Next(0, 3);     //Roughly randomise the layout of a map
-                        while (_tileData[j, i] == 1);                   //Skips the solid blocks
+                        {
+                          _tileData[j, i] = Game1.RNG.Next(0, 3);     //Roughly randomise the layout of a map
+                          if (_tileData[j, i] == 1)
+                              _tileData[j, i] = 2;
+                        }
+                        while (_tileData[j, i] == 1);                  //Skips the solid blocks
                     }
-                    if (_tileData[j, i] != 0)
+                    if (_tileData[j, i] == 8)
+                    {
+                        do
+                        {
+                            _tileData[j, i] = Game1.RNG.Next(8, 11);     //Roughly randomise the layout of a map
+                            if (_tileData[j, i] == 9)
+                                _tileData[j, i] = 10;
+                        }
+                        while (_tileData[j, i] == 9) ;
+                    }
+                    if (_tileData[j, i] != 0 && _tileData[j, i] != 3 && _tileData[j, i] != 8 && _tileData[j, i] != 11)
                     {
                         int x = j * _tileSize;
                         int y = i * _tileSize;

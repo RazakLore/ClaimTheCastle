@@ -14,12 +14,14 @@ namespace ClaimTheCastle
         private float m_maxMoveTime;
         private float m_moveChangeTimer;
         private Point tileDestination;
+        private Rectangle playerCollision;
 
         private bool isPlayer;
         public bool isDeciding { get; set; }
+        public bool placingBomb { get; set; }
         private Tilemap _tileMap;   //Reference to the tile map
 
-        public Player(Vector2 startPos, Texture2D txr, int frameCount, int fps, bool isPlayer/*, Tilemap tileMap*/) : base(startPos, txr, frameCount, fps)
+        public Player(Vector2 startPos, Texture2D txr, int frameCount, int fps, bool isThisPlayer/*, Tilemap tileMap*/) : base(startPos, txr, frameCount, fps)
         {
             MaxBombs = 2;
             BombsPlaced = 0;
@@ -27,13 +29,14 @@ namespace ClaimTheCastle
             m_moveCounter = 0;
             m_moveChangeTimer = 0;
             m_maxMoveTime = 5;
-            this.isPlayer = isPlayer;
+            isPlayer = isThisPlayer;
             tileDestination = Position.ToPoint();
+            playerCollision = new Rectangle((int)Position.X, (int)Position.Y + 1, 14, 14);
         }
 
         public void Update(GameTime gameTime, Tilemap currentMap, KeyboardState kb, KeyboardState kbOld)
         {
-            if (this.isPlayer)
+            if (isPlayer)
             {
                 if (kb.IsKeyDown(Keys.W))
                 {
@@ -112,14 +115,22 @@ namespace ClaimTheCastle
                         moveDir = (Direction)Game1.RNG.Next(0, 4);
                     }
                     else
+                    {
+                        m_moveChangeTimer = m_maxMoveTime;
                         moveDir = (Direction)Game1.RNG.Next(0, 4);
-
+                    }
+                        
                     Move(moveDir);
                 }
                 else
                     moveDir = (Direction)Game1.RNG.Next(0, 4);
 
-
+                //if (_tileMap.GetTile(new Vector2((int)Position.X, (int)Position.Y - 2)) == 2|| _tileMap.GetTile(new Vector2((int)Position.X, (int)Position.Y + 2)) == 2
+                //    || _tileMap.GetTile(new Vector2((int)Position.X - 2, (int)Position.Y)) == 2|| _tileMap.GetTile(new Vector2((int)Position.X + 2, (int)Position.Y)) == 2 && m_moveChangeTimer > 4)
+                //{
+                //    placingBomb = true;
+                //    m_moveChangeTimer = m_maxMoveTime;
+                
                 //if (_tileMap.GetTileIndex(Position).X > tileDestination.X)
                 //{
                 //    //Move(Direction.)

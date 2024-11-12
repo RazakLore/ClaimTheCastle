@@ -15,7 +15,7 @@ namespace ClaimTheCastle
         private Vector2 player;
         private Cam2D cam;
 
-        int currentLevel = 0;
+        int currentLevel = 1;
         private List<Tilemap> arenas;
         private TextureAtlas _textureAtlas;
 
@@ -58,10 +58,12 @@ namespace ClaimTheCastle
             }
 
             _textureAtlas = new TextureAtlas(Content.Load<Texture2D>("TextureAtlas"), 8, 6, 16, 16);
-            player1 = new Player(new Vector2(34, 17), Content.Load<Texture2D>("Actors/WizardSpriteSheet"), 4, 8, true);
-            player2 = new Player(new Vector2(4 * 16, 6 * 16), Content.Load<Texture2D>("Actors/WizardSpriteSheet"), 4, 8, false);
-            player3 = new Player(new Vector2(5 * 16, 5 * 16), Content.Load<Texture2D>("Actors/WizardSpriteSheet"), 4, 8, false);
-            player4 = new Player(new Vector2(7 * 16, 7 * 16), Content.Load<Texture2D>("Actors/WizardSpriteSheet"), 4, 8, false);
+            #region Load Players
+            player1 = new Player(new Vector2(2 * 16, 1 * 16), Content.Load<Texture2D>("Actors/WizardSpriteSheet"), 4, 8, true);
+            player2 = new Player(new Vector2(14 * 16, 1 * 16), Content.Load<Texture2D>("Actors/WizardSpriteSheet"), 4, 8, false);
+            player3 = new Player(new Vector2(2 * 16, 11 * 16), Content.Load<Texture2D>("Actors/WizardSpriteSheet"), 4, 8, false);
+            player4 = new Player(new Vector2(14 * 16, 11 * 16), Content.Load<Texture2D>("Actors/WizardSpriteSheet"), 4, 8, false);
+            #endregion
 
             debug = Content.Load<SpriteFont>("Debug");
 
@@ -88,20 +90,33 @@ namespace ClaimTheCastle
             if (kb.IsKeyDown(Keys.Space) && kbOld.IsKeyUp(Keys.Space)/* && player1.BombsPlaced <= player1.MaxBombs*/)
             {
                 player1.BombsPlaced++;
-                bombs.Add(new Bomb(new Point(player1.Position.ToPoint().X / 16, player1.Position.ToPoint().Y / 16), 3, 5, arenas[currentLevel], Content.Load<Texture2D>("TestBomb")));
+                bombs.Add(new Bomb(new Point(player1.Position.ToPoint().X / 16, player1.Position.ToPoint().Y / 16), 3, 5, arenas[currentLevel], Content.Load<Texture2D>("TestBomb"), 1));
                 bombcount += 1;
             }
-
-            if (player2.isDeciding)
-                bombs.Add(new Bomb(new Point(player2.Position.ToPoint().X / 16, player2.Position.ToPoint().Y / 16), 3, 5, arenas[currentLevel], Content.Load<Texture2D>("TestBomb")));
-            if (player3.isDeciding)
-                bombs.Add(new Bomb(new Point(player3.Position.ToPoint().X / 16, player3.Position.ToPoint().Y / 16), 3, 5, arenas[currentLevel], Content.Load<Texture2D>("TestBomb")));
+            #region AI Bombing
+            if (player2.isDeciding && player2.BombsPlaced <= player2.MaxBombs)
+            {
+                bombs.Add(new Bomb(new Point(player2.Position.ToPoint().X / 16, player2.Position.ToPoint().Y / 16), 3, 5, arenas[currentLevel], Content.Load<Texture2D>("TestBomb"), 2));
+                player2.BombsPlaced++;
+            }
+            if (player3.isDeciding && player3.BombsPlaced <= player3.MaxBombs)
+            {
+                bombs.Add(new Bomb(new Point(player3.Position.ToPoint().X / 16, player3.Position.ToPoint().Y / 16), 3, 5, arenas[currentLevel], Content.Load<Texture2D>("TestBomb"), 3));
+                player3.BombsPlaced++;
+            }
+            if (player4.isDeciding && player4.BombsPlaced <= player4.MaxBombs)
+            {
+                bombs.Add(new Bomb(new Point(player4.Position.ToPoint().X / 16, player4.Position.ToPoint().Y / 16), 3, 5, arenas[currentLevel], Content.Load<Texture2D>("TestBomb"), 4));
+                player4.BombsPlaced++;
+            }
+            #endregion
 
             for (int i = 0; i < bombs.Count; i++)
             {
                 bombs[i].Update(gameTime);
                 if (bombs[i].TimeToDie == true)
                 {
+                    CheckBombOwner();
                     bombs.RemoveAt(i);
                     bombcount -= 1;
                 }
@@ -111,9 +126,6 @@ namespace ClaimTheCastle
             player2.Update(gameTime, arenas[currentLevel], kb, kbOld);
             player3.Update(gameTime, arenas[currentLevel], kb, kbOld);
             player4.Update(gameTime, arenas[currentLevel], kb, kbOld);
-
-            //cam.Position.X = (-player1.Position.X + _graphics.PreferredBackBufferWidth / (2 * 3));
-            //cam.Position.Y = (-player1.Position.Y + _graphics.PreferredBackBufferHeight / (2 * 3));
 
             base.Update(gameTime);
             kbOld = kb;
@@ -152,7 +164,7 @@ namespace ClaimTheCastle
             //_spriteBatch.DrawString(debug, player1.Position.ToString(), player1.Position, Color.Orange);
             _spriteBatch.DrawString(debug, fps.ToString() + "Frames when no explode", Vector2.Zero, Color.Black);
             
-            if (fps < 58 && isRecord && bombs.Count > 0)
+            if (fps < 58 && isRecord && gameTime.TotalGameTime.TotalSeconds > 4 && bombs.Count > 2)
             {
                 recordFPS = 1 / (float)gameTime.ElapsedGameTime.TotalSeconds;
                 //isRecord = false;
@@ -175,6 +187,21 @@ namespace ClaimTheCastle
                 temp = Matrix.CreateTranslation(new Vector3(Position.X, Position.Y, 0));
                 temp *= Matrix.CreateScale(3);  // Zooms in by 2x
                 return temp;
+            }
+        }
+
+        private void CheckBombOwner()
+        {
+            for (int i = 0; i < bombs.Count; i++)
+            {
+                if (bombs[i].PlayerOwner == 1)
+                    player1.BombsPlaced--;
+                else if (bombs[i].PlayerOwner == 2)
+                    player2.BombsPlaced--;
+                else if (bombs[i].PlayerOwner == 3)
+                    player3.BombsPlaced--;
+                else if (bombs[i].PlayerOwner == 4)
+                    player4.BombsPlaced--;
             }
         }
     }
