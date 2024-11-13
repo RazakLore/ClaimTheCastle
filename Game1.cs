@@ -32,6 +32,8 @@ namespace ClaimTheCastle
 
         float recordFPS = 60; bool isRecord = true;
 
+        public static GameConsole GConsole;
+
         public Game1()
         {
             _graphics = new GraphicsDeviceManager(this);
@@ -44,6 +46,18 @@ namespace ClaimTheCastle
 
         protected override void Initialize()
         {
+            // Create a console (only causes the constructor to be called.)
+            GConsole = new GameConsole(this, new Point(256, 512), ConsoleLocation.BottomRight)
+            {
+                FadeAfterEvent = false,
+                ShowTimeStamps = true,
+                LogLogging = false,
+            };
+            // Register it as a component so that its own Initialise, Update and Draw will be called when appropriate.
+            Components.Add(GConsole);
+
+            base.Initialize();
+
             cam.Position = new Vector2(46, 20);
             player = new Vector2 (50, 50);
 
@@ -67,7 +81,6 @@ namespace ClaimTheCastle
 
             debug = Content.Load<SpriteFont>("Debug");
 
-            base.Initialize();
         }
 
         protected override void LoadContent()
