@@ -107,6 +107,15 @@ namespace ClaimTheCastle
             }
             else
                 Game1.GConsole.Warn($"Cannot destroy tile at ({j}, {i}) - it is not destructible.");
+
+            if (_tileData[j, i] == 10)
+            {
+                _realTiles[i * Dimensions + j] = null;
+                _tileData[j, i] = 8;
+                Game1.GConsole.Log($"Tile at ({i}, {j}) destroyed.");
+            }
+            else
+                Game1.GConsole.Warn($"Cannot destroy tile at ({j}, {i}) - it is not destructible.");
         }
 
         public void Draw(SpriteBatch sb, TextureAtlas ta)

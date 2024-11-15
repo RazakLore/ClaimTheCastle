@@ -100,11 +100,10 @@ namespace ClaimTheCastle
                 Exit();
 
             
-            if (kb.IsKeyDown(Keys.Space) && kbOld.IsKeyUp(Keys.Space)/* && player1.BombsPlaced <= player1.MaxBombs*/)
+            if (kb.IsKeyDown(Keys.Space) && kbOld.IsKeyUp(Keys.Space) && player1.BombsPlaced <= player1.MaxBombs /*&& arenas[currentLevel].testing(new Vector2(player1.Position.X, player1.Position.Y))*/)
             {
-                player1.BombsPlaced++;
                 bombs.Add(new Bomb(new Point(player1.Position.ToPoint().X / 16, player1.Position.ToPoint().Y / 16), 3, 5, arenas[currentLevel], Content.Load<Texture2D>("TestBomb"), 1));
-                bombcount += 1;
+                player1.BombsPlaced++;
             }
             #region AI Bombing
             if (player2.isDeciding && player2.BombsPlaced <= player2.MaxBombs)
@@ -129,7 +128,14 @@ namespace ClaimTheCastle
                 bombs[i].Update(gameTime);
                 if (bombs[i].TimeToDie == true)
                 {
-                    CheckBombOwner();
+                    if (bombs[i].PlayerOwner == 1)
+                        player1.BombsPlaced--;
+                    else if (bombs[i].PlayerOwner == 2)
+                        player2.BombsPlaced--;
+                    else if (bombs[i].PlayerOwner == 3)
+                        player3.BombsPlaced--;
+                    else if (bombs[i].PlayerOwner == 4)
+                        player4.BombsPlaced--;
                     bombs.RemoveAt(i);
                     bombcount -= 1;
                 }
@@ -200,21 +206,6 @@ namespace ClaimTheCastle
                 temp = Matrix.CreateTranslation(new Vector3(Position.X, Position.Y, 0));
                 temp *= Matrix.CreateScale(3);  // Zooms in by 2x
                 return temp;
-            }
-        }
-
-        private void CheckBombOwner()
-        {
-            for (int i = 0; i < bombs.Count; i++)
-            {
-                if (bombs[i].PlayerOwner == 1)
-                    player1.BombsPlaced--;
-                else if (bombs[i].PlayerOwner == 2)
-                    player2.BombsPlaced--;
-                else if (bombs[i].PlayerOwner == 3)
-                    player3.BombsPlaced--;
-                else if (bombs[i].PlayerOwner == 4)
-                    player4.BombsPlaced--;
             }
         }
     }

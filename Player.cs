@@ -13,8 +13,15 @@ namespace ClaimTheCastle
         private float m_moveCounter;
         private float m_maxMoveTime;
         private float m_moveChangeTimer;
+
+        private float m_intoMazeTimer;
+        private float m_maxIntoMazeTimer = 0.5f;
+
         private Point tileDestination;
         private Rectangle playerCollision;
+        private Direction _prevAiDrection = Direction.North;
+        private float _prevAiDrectionXInc = 0.0f;
+        private float _prevAiDrectionYInc = -2.0f;
 
         private bool isPlayer;
         public bool isDeciding { get; set; }
@@ -71,74 +78,114 @@ namespace ClaimTheCastle
             else        // AI PLAYERS
             {
                 Direction moveDir;
+                int rnj = Game1.RNG.Next(0, 4);
+                bool canMove = true;
 
-                
-                if (isDeciding)
-                {
-                    tileDestination = new Point(Game1.RNG.Next(2, 14), Game1.RNG.Next(1, 11));
-                    isDeciding = false;
-                    Game1.GConsole.Good(tileDestination + " headed to!");
-                }
-                 
-                m_moveChangeTimer += (float)gameTime.ElapsedGameTime.TotalSeconds;
-                m_moveCounter += (float)gameTime.ElapsedGameTime.TotalSeconds; //Timer
+                m_moveChangeTimer += (float)gameTime.ElapsedGameTime.TotalSeconds; // Timer for deciding to change direction
+                m_moveCounter += (float)gameTime.ElapsedGameTime.TotalSeconds; // Timer for controlling movement intervals
 
+                // Timer for forced direction change (to prevent staying stuck on edges)
                 if (m_moveChangeTimer > m_maxMoveTime)
                 {
                     isDeciding = true;
-                    m_moveChangeTimer = 0;
+                    m_moveChangeTimer = 0;  // Reset the timer when it triggers a change
                 }
 
                 if (m_moveCounter >= m_moveTrigger)
                 {
                     m_moveCounter = 0;
 
-                    if (tileDestination.Y < Position.Y / 16 && currentMap.testing(new Vector2((int)Position.X, (int)Position.Y - 2)))
+                    m_moveChangeTimer = m_maxMoveTime;
+
+                    m_intoMazeTimer += (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+                    float newX = Position.X;
+                    float newY = Position.Y;
+
+                    // Give it a value to satisfy compiler;
+                    moveDir = _prevAiDrection;
+
+                    // Array of possible moves
+                    float[] possibleMoves = {
+                        newX + 2, newY, (float)Direction.East,  // East
+                        newX - 2, newY, (float)Direction.West,  // West
+                        newX, newY + 2, (float)Direction.South, // South
+                        newX, newY - 2, (float)Direction.North, // North
+                    };
+
+                    int i = 0;
+                    Debug.WriteLine("Prev direction: " + _prevAiDrection);
+                    Vector2 newPoint = new Vector2((int)newX + _prevAiDrectionXInc, (int)newY + _prevAiDrectionYInc);
+
+                    int idx = Game1.RNG.Next(0, 4) * 3;
+
+                    // Check if the AI is stuck and just keep moving in its previous direction
+                    if (currentMap.testing(newPoint))
                     {
-                        moveDir = Direction.North;
+                        Debug.WriteLine("Using prev dir");
+                        // Skip the loop if we can still move the other direction
+                        idx = possibleMoves.Length;
+                        moveDir = _prevAiDrection;
                     }
-                    else if (tileDestination.Y > Position.Y / 16 && currentMap.testing(new Vector2((int)Position.X, (int)Position.Y + 2)))
+
+                    // Generates a random number every update:
+                    int randomDecision = Game1.RNG.Next(0, 15); // Make the odds of new direction 1/15
+
+                    // If the random number is within the odds, change the AI's direction
+                    if (randomDecision < 1) // Set it as a 1 in 15 chance of new direction every update
                     {
-                        moveDir = Direction.South;
+                        // Reset idx to force the new direction
+                        idx = Game1.RNG.Next(0, 4) * 3;
                     }
-                    else if (tileDestination.X < Position.X / 16 && currentMap.testing(new Vector2((int)Position.X - 2, (int)Position.Y)))
+
+                    //// If the AI has been in the same position for a while, force it to change direction
+                    //if (m_intoMazeTimer > m_maxIntoMazeTimer)
+                    //{
+                    //    // Reset timer and force a random movement decision inside the maze
+                    //    m_intoMazeTimer = 0;
+                    //    idx = Game1.RNG.Next(0, 4) * 3;
+                    //    Debug.WriteLine("Forced direction change!");
+                    //}
+
+                    // Movement loop that chooses a valid move based on collision checks
+                    for (i = idx; i <= possibleMoves.Length - 3;)
                     {
-                        moveDir = Direction.West;
+                        newPoint.X = possibleMoves[i];
+                        newPoint.Y = possibleMoves[i + 1];
+                        moveDir = (Direction)possibleMoves[i + 2];
+                        if (currentMap.testing(newPoint))
+                            break;
+                        // Re-randomize idx to avoid bias towards any direction
+                        i = Game1.RNG.Next(0, 4) * 3;
                     }
-                    else if (tileDestination.X > Position.X / 16 && currentMap.testing(new Vector2((int)Position.X + 2, (int)Position.Y)))
+
+                    // Update direction and movement
+                    if (_prevAiDrection != moveDir)
                     {
-                        moveDir = Direction.East;
+                        _prevAiDrection = moveDir;
+                        _prevAiDrectionXInc = possibleMoves[i] - newX;
+                        _prevAiDrectionYInc = possibleMoves[i + 1] - newY;
                     }
-                    else if (tileDestination == new Point(Position.ToPoint().X / 16, Position.ToPoint().Y / 16))
-                    {
-                        m_moveChangeTimer = m_maxMoveTime;
-                        moveDir = (Direction)Game1.RNG.Next(0, 4);
-                    }
-                    else
-                    {
-                        m_moveChangeTimer = m_maxMoveTime;
-                        moveDir = (Direction)Game1.RNG.Next(0, 4);
-                    }
-                        
-                    Move(moveDir);
+
+                    if (canMove)
+                        Move(moveDir);
                 }
                 else
-                    moveDir = (Direction)Game1.RNG.Next(0, 4);
-
-                //if (_tileMap.GetTile(new Vector2((int)Position.X, (int)Position.Y - 2)) == 2|| _tileMap.GetTile(new Vector2((int)Position.X, (int)Position.Y + 2)) == 2
-                //    || _tileMap.GetTile(new Vector2((int)Position.X - 2, (int)Position.Y)) == 2|| _tileMap.GetTile(new Vector2((int)Position.X + 2, (int)Position.Y)) == 2 && m_moveChangeTimer > 4)
-                //{
-                //    placingBomb = true;
-                //    m_moveChangeTimer = m_maxMoveTime;
-                
-                //if (_tileMap.GetTileIndex(Position).X > tileDestination.X)
-                //{
-                //    //Move(Direction.)
-                //}
+                {
+                    // If the AI is not actively moving, allow it to pick a random direction
+                    moveDir = (Direction)Game1.RNG.Next(0, 5);
+                }
             }
             
-
             m_rectangle = new Rectangle((int)m_position.X, (int)m_position.Y, m_txr.Width, m_txr.Height);
         }
+    }
+
+    enum AI_States
+    {
+        Idle,
+        Exploring,
+        RunningAway,
+        SeekingPlayer
     }
 }
