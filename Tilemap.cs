@@ -17,6 +17,9 @@ namespace ClaimTheCastle
         
         private Rectangle?[] _realTiles;        // ? to make this a nullable value type
         public Vector2 Location { get; set; }
+        private float animationTimer = 0;
+        public bool animateExplosion { get; set; }
+        private int oldTile = 1;
         public bool isWalkable(Point idx)
         {
             switch (_tileData[idx.X, idx.Y])
@@ -96,10 +99,10 @@ namespace ClaimTheCastle
             Game1.GConsole.Log("Read " + i + " lines and " + j + " entries per line into tilemap size + " + _tileData.Length);
         }
 
-        public void DestroyTile(int j, int i)
+        public void DestroyTile(int j, int i, int oldTile)
         {
             //Check if the tile is destructible
-            if (_tileData[j, i] == 2)
+            if (oldTile == 2)
             {
                 _realTiles[i * Dimensions + j] = null;
                 _tileData[j, i] = 0;
@@ -108,7 +111,7 @@ namespace ClaimTheCastle
             else
                 Game1.GConsole.Warn($"Cannot destroy tile at ({j}, {i}) - it is not destructible.");
 
-            if (_tileData[j, i] == 10)
+            if (oldTile == 10)
             {
                 _realTiles[i * Dimensions + j] = null;
                 _tileData[j, i] = 8;
@@ -116,6 +119,32 @@ namespace ClaimTheCastle
             }
             else
                 Game1.GConsole.Warn($"Cannot destroy tile at ({j}, {i}) - it is not destructible.");
+        }
+
+        public void TileExplosionAnimate(int j, int i, GameTime gameTime)
+        {
+            if (_tileData[j, i] < 24 || _tileData[j, i] > 30)
+                oldTile = _tileData[j, i];
+            if (animateExplosion)
+            {
+                //if (_tileData[j, i] != 24 || _tileData[j, i] != 25 || _tileData[j, i] != 26 || _tileData[j, i] != 27 || _tileData[j, i] != 28 || _tileData[j, i] != 29)
+                //    _tileData[j, i] = 24;
+
+                if (_tileData[j, i] >= 24 && _tileData[j, i] < 30)
+                    animationTimer += (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+                if (animationTimer > 0.1f)
+                {
+                    if (_tileData[j, i] != 30)
+                        _tileData[j, i]++;
+                    else
+                    {
+                        DestroyTile(j, i, oldTile);
+                        animateExplosion = false;
+                    }
+                    animationTimer = 0;
+                }
+            }
         }
 
         public void Draw(SpriteBatch sb, TextureAtlas ta)

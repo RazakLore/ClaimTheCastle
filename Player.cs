@@ -132,7 +132,7 @@ namespace ClaimTheCastle
                     int randomDecision = Game1.RNG.Next(0, 15); // Make the odds of new direction 1/15
 
                     // If the random number is within the odds, change the AI's direction
-                    if (randomDecision < 1) // Set it as a 1 in 15 chance of new direction every update
+                    if (randomDecision < 1) // Set it as a 1 in 15 chance of new direction every update  --  Should also do AND (OR OR...) collision checks here to prevent wall bouncing
                     {
                         // Reset idx to force the new direction
                         idx = Game1.RNG.Next(0, 4) * 3;

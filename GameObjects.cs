@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using SharpDX.Direct3D9;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -30,6 +31,9 @@ namespace ClaimTheCastle
 
         private int playerOwner;
         public int PlayerOwner { get { return playerOwner; } }
+        public int x { get; set; }
+        public int y { get; set; }
+        
         public Bomb(Point position, int explosionRadius, float timeToExplode, Tilemap tileMap, Texture2D cauldron, int playerOwn) : base(position)
         {
             Position = position;
@@ -51,7 +55,7 @@ namespace ClaimTheCastle
 
             if (TimeToExplode <= 0)
             {
-                TriggerExplosion();
+                TriggerExplosion(gameTime);
                 IsExploded = true;
                 TimeToDie = true;
             }
@@ -60,26 +64,26 @@ namespace ClaimTheCastle
 
         }
 
-        public void TriggerExplosion()
+        public void TriggerExplosion(GameTime gameTime)
         {
-            Explode(new Point(Position.X, Position.Y));
+            Explode(new Point(Position.X, Position.Y), gameTime);
         }
 
-        private void Explode(Point bombPosition)
+        private void Explode(Point bombPosition, GameTime gameTime)
         {
             Game1.GConsole.Warn($"Bomb detonated at {bombPosition}!");
 
             // Call function to handle the explosion in all directions
-            ExplodeInDirection(bombPosition, 0, -1);                    //Up
-            ExplodeInDirection(bombPosition, 0, 1);                     //Down
-            ExplodeInDirection(bombPosition, -1, 0);                    //Left
-            ExplodeInDirection(bombPosition, 1, 0);                     //Right
+            ExplodeInDirection(bombPosition, 0, -1, gameTime);                    //Up
+            ExplodeInDirection(bombPosition, 0, 1, gameTime);                     //Down
+            ExplodeInDirection(bombPosition, -1, 0, gameTime);                    //Left
+            ExplodeInDirection(bombPosition, 1, 0, gameTime);                     //Right
         }
 
-        private void ExplodeInDirection(Point bombPosition, int dx, int dy)
+        private void ExplodeInDirection(Point bombPosition, int dx, int dy, GameTime gameTime)
         {
-            int x = bombPosition.X;
-            int y = bombPosition.Y;
+            x = bombPosition.X;
+            y = bombPosition.Y;
 
             for (int i = 0; i <= ExplosionRadius; i++)      // For every tile before 4
             {
@@ -100,7 +104,14 @@ namespace ClaimTheCastle
                 if (tileType == 2 || tileType == 10)   //Look for tiles of type 2
                 {
                     Game1.GConsole.Log($"Destroying tile at ({x}, {y})!");
-                    _tileMap.DestroyTile(x, y);     //Destroy the destructible wall (ANIMATE THIS LATER)
+
+                    _tileMap.TileData[x, y] = 24;
+                    _tileMap.animateExplosion = true;
+                    //_tileMap.TileExplosionAnimate(x, y, gameTime);
+                    //_tileMap.DestroyTile(x, y);     //Destroy the destructible wall (ANIMATE THIS LATER)
+
+                    //Animate the tile destruction by making tile type = 24 and then increment it up by 1 until 29 before destroying, add sound effect,
+                    //maybe a timer is necessary here to stop animation being over so quickly
                     break;                          //Stop the explosion in this direction as it has hit a wall
                 }
 

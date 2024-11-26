@@ -126,7 +126,13 @@ namespace ClaimTheCastle
             for (int i = 0; i < bombs.Count; i++)
             {
                 bombs[i].Update(gameTime);
-                if (bombs[i].TimeToDie == true)
+
+                if (arenas[currentLevel].animateExplosion)
+                {
+                    arenas[currentLevel].TileExplosionAnimate(bombs[i].x, bombs[i].y, gameTime);
+                }
+
+                if (bombs[i].TimeToDie == true && arenas[currentLevel].animateExplosion == false)   //The bomb must persist while the explosion occurs, otherwise the location variables are lost
                 {
                     if (bombs[i].PlayerOwner == 1)
                         player1.BombsPlaced--;
