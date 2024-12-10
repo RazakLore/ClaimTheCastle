@@ -194,37 +194,38 @@ namespace ClaimTheCastle
         public override void Draw(GameTime gameTime)
         {
             // Draw the background and border
-            _sB.Begin();
-            _sB.DrawString(_entryFont, 
-                "Total: " + _totalMessages.ToString()
-                + " MpS: " + (_totalMessages / _timeStamp).ToString("0.00"), 
-                new Vector2(_bounds.Location.X, _bounds.Location.Y - _entryFont.MeasureString("0").Y), 
-                TextColour * _fadeRemaining);
-            DrawFrame();
-            _sB.End();
 
-            // Add the clipping rect to the graphics device to be used in the draw method
-            _sB.GraphicsDevice.ScissorRectangle = _clippingRect;
-            // Draw the text, but use a clipping rectangle this time so it doesn't flow outside the background
-            _sB.Begin(rasterizerState: new RasterizerState() { ScissorTestEnable = true });
+            //_sB.Begin();
+            //_sB.DrawString(_entryFont, 
+            //    "Total: " + _totalMessages.ToString()
+            //    + " MpS: " + (_totalMessages / _timeStamp).ToString("0.00"), 
+            //    new Vector2(_bounds.Location.X, _bounds.Location.Y - _entryFont.MeasureString("0").Y), 
+            //    TextColour * _fadeRemaining);
+            //DrawFrame();
+            //_sB.End();
 
-            // Work out where the first (most recent) log entry will be near the bottom of the console.
-            var linePosition = new Vector2(_bounds.Left + 4, _bounds.Bottom - _entryFont.MeasureString("0").Y - 4);
+            //// Add the clipping rect to the graphics device to be used in the draw method
+            //_sB.GraphicsDevice.ScissorRectangle = _clippingRect;
+            //// Draw the text, but use a clipping rectangle this time so it doesn't flow outside the background
+            //_sB.Begin(rasterizerState: new RasterizerState() { ScissorTestEnable = true });
 
-            // loop backwards through the entries and display them
-            if (_textEntries.Count > 0)
-            {
-                _sB.DrawString(_entryFont, _textEntries[^1].Value, linePosition, _textEntries[^1].Tint * _fadeRemaining);
-                for (int i = _textEntries.Count - 2; i >= 0; i--)
-                {
-                    if (_textEntries[i].TimeStamp != _textEntries[i + 1].TimeStamp)
-                        linePosition.Y -= _entryFont.MeasureString("0").Y + 4;
-                    else
-                        linePosition.Y -= _entryFont.MeasureString("0").Y + 1;
-                    _sB.DrawString(_entryFont, _textEntries[i].Value, linePosition, _textEntries[i].Tint * _fadeRemaining);
-                }
-            }
-            _sB.End();
+            //// Work out where the first (most recent) log entry will be near the bottom of the console.
+            //var linePosition = new Vector2(_bounds.Left + 4, _bounds.Bottom - _entryFont.MeasureString("0").Y - 4);
+
+            //// loop backwards through the entries and display them
+            //if (_textEntries.Count > 0)
+            //{
+            //    _sB.DrawString(_entryFont, _textEntries[^1].Value, linePosition, _textEntries[^1].Tint * _fadeRemaining);
+            //    for (int i = _textEntries.Count - 2; i >= 0; i--)
+            //    {
+            //        if (_textEntries[i].TimeStamp != _textEntries[i + 1].TimeStamp)
+            //            linePosition.Y -= _entryFont.MeasureString("0").Y + 4;
+            //        else
+            //            linePosition.Y -= _entryFont.MeasureString("0").Y + 1;
+            //        _sB.DrawString(_entryFont, _textEntries[i].Value, linePosition, _textEntries[i].Tint * _fadeRemaining);
+            //    }
+            //}
+            //_sB.End();
         }
 
         private void Layout(Rectangle bounds)

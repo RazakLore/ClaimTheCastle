@@ -8,6 +8,13 @@ using System.Reflection;
 
 namespace ClaimTheCastle
 {
+    enum tileState
+    {
+        Walkable,
+        Danger,
+        Blocked
+    }
+
     class Tilemap
     {
         private int[,] _tileData;
@@ -16,21 +23,11 @@ namespace ClaimTheCastle
         public int[,] TileData { get { return _tileData; } }
         
         private Rectangle?[] _realTiles;        // ? to make this a nullable value type
+        public Rectangle?[] _dangerTiles { get; set; }      // Keep track of all tiles about to explode
         public Vector2 Location { get; set; }
-        private float animationTimer = 0;
-        public bool animateExplosion { get; set; }
-        private int oldTile = 1;
-        public bool isWalkable(Point idx)
-        {
-            switch (_tileData[idx.X, idx.Y])
-            {
-                case 0:
-                    return true;
-                default:
-                    return false;
-            }
-        }
-        public bool testing(Vector2 playerPos)
+
+
+        public bool IsWalkable(Vector2 playerPos)
         {
             foreach (Rectangle? tileRect in _realTiles)
             {
@@ -39,7 +36,41 @@ namespace ClaimTheCastle
                     return false;       //There is a collision, so the player cannot walk
                 }
             }
-            return true;                //There was no collision, player can walk
+            return true;
+            #region 
+            //switch (_tileData[GetTileIndex(playerPos).X, GetTileIndex(playerPos).Y])
+            //{
+            //    case 0:
+            //        return tileState.Walkable;
+            //    case 4:
+            //        return tileState.Danger;
+            //    case 8:
+            //        return tileState.Walkable;
+            //    case 12:
+            //        return tileState.Danger;
+            //    case 16:
+            //        return tileState.Walkable;
+            //    case 19:
+            //        return tileState.Walkable;
+            //    case 20:
+            //        return tileState.Danger;
+            //    default:
+            //        return tileState.Blocked;
+            //}
+            #endregion
+        }
+        public bool IsDanger(Vector2 playerPos)
+        {
+            foreach (Rectangle? tileRect in _dangerTiles)
+            {
+                if (tileRect.HasValue)
+                {
+                    var rect = new Rectangle((int)playerPos.X, (int)playerPos.Y + 1, _tileSize - 2, _tileSize - 2);
+                    if (tileRect.Value.Intersects(rect))
+                        return true;
+                }
+            }
+            return false;
         }
 
         public Tilemap(string mapSource, Vector2 location, int dimensions, int tileSize)
@@ -49,6 +80,7 @@ namespace ClaimTheCastle
             _tileData = new int[dimensions, dimensions];
             _tileSize = tileSize;
             _realTiles = new Rectangle?[dimensions * dimensions];
+            _dangerTiles = new Rectangle?[dimensions * dimensions];
             //gen static normal, loop through x number of times picking random pos and if random pos is not occupied put barrel down then 
 
             var reader = new StreamReader(File.OpenRead(mapSource + ".txt"));
@@ -68,23 +100,33 @@ namespace ClaimTheCastle
                     {
                         do
                         {
-                          _tileData[j, i] = Game1.RNG.Next(0, 3);     //Roughly randomise the layout of a map
+                          //_tileData[j, i] = Game1.RNG.Next(0, 3);         //Roughly randomise the layout of a map
                           if (_tileData[j, i] == 1)
                               _tileData[j, i] = 2;
                         }
-                        while (_tileData[j, i] == 1);                  //Skips the solid blocks
+                        while (_tileData[j, i] == 1);                       //Skips the solid blocks
                     }
                     if (_tileData[j, i] == 8)
                     {
                         do
                         {
-                            _tileData[j, i] = Game1.RNG.Next(8, 11);     //Roughly randomise the layout of a map
+                            //_tileData[j, i] = Game1.RNG.Next(8, 11);      //Roughly randomise the layout of a map
                             if (_tileData[j, i] == 9)
                                 _tileData[j, i] = 10;
                         }
                         while (_tileData[j, i] == 9) ;
                     }
-                    if (_tileData[j, i] != 0 && _tileData[j, i] != 3 && _tileData[j, i] != 8 && _tileData[j, i] != 11)
+                    if (_tileData[j, i] == 16)
+                    {
+                        do
+                        {
+                            _tileData[j, i] = Game1.RNG.Next(16, 19);       //Roughly randomise the layout of a map
+                            if (_tileData[j, i] == 17)
+                                _tileData[j, i] = 18;
+                        }
+                        while (_tileData[j, i] == 17);
+                    }
+                    if (_tileData[j, i] != 0 && _tileData[j, i] != 3 && _tileData[j, i] != 8 && _tileData[j, i] != 11 && _tileData[j, i] != 16 && _tileData[j, i] != 19 && _tileData[j, i] != 21 && _tileData[j, i] != 22)
                     {
                         int x = j * _tileSize;
                         int y = i * _tileSize;
@@ -119,32 +161,15 @@ namespace ClaimTheCastle
             }
             else
                 Game1.GConsole.Warn($"Cannot destroy tile at ({j}, {i}) - it is not destructible.");
-        }
 
-        public void TileExplosionAnimate(int j, int i, GameTime gameTime)
-        {
-            if (_tileData[j, i] < 24 || _tileData[j, i] > 30)
-                oldTile = _tileData[j, i];
-            if (animateExplosion)
+            if (oldTile == 18)
             {
-                //if (_tileData[j, i] != 24 || _tileData[j, i] != 25 || _tileData[j, i] != 26 || _tileData[j, i] != 27 || _tileData[j, i] != 28 || _tileData[j, i] != 29)
-                //    _tileData[j, i] = 24;
-
-                if (_tileData[j, i] >= 24 && _tileData[j, i] < 30)
-                    animationTimer += (float)gameTime.ElapsedGameTime.TotalSeconds;
-
-                if (animationTimer > 0.1f)
-                {
-                    if (_tileData[j, i] != 30)
-                        _tileData[j, i]++;
-                    else
-                    {
-                        DestroyTile(j, i, oldTile);
-                        animateExplosion = false;
-                    }
-                    animationTimer = 0;
-                }
+                _realTiles[i * Dimensions + j] = null;
+                _tileData[j, i] = 16;
+                Game1.GConsole.Log($"Tile at ({i}, {j}) destroyed.");
             }
+            else
+                Game1.GConsole.Warn($"Cannot destroy tile at ({j}, {i}) - it is not destructible.");
         }
 
         public void Draw(SpriteBatch sb, TextureAtlas ta)
