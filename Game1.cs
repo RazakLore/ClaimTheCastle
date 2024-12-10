@@ -317,13 +317,14 @@ namespace ClaimTheCastle
             {
                 bombs[i].Update(gameTime);
 
-                if (bombs[i].IsExploded)
-                {
-                    genericUnsafeTileClears[i].ClearTileExecutor(gameTime);     // This is driving me insane. It does not clear all of the unsafe tiles from the selected list item??
-                }
-
                 if (bombs[i].TimeToDie)
                 {
+                    foreach (var unsafeTile in genericUnsafeTileClears)
+                    {
+                        if (unsafeTile.Position == bombs[i].Position)
+                            unsafeTile.ClearTileExecutor(gameTime);
+                    }
+                        
                     if (bombs[i].PlayerOwner == 1)
                         player1.BombsPlaced--;
                     else if (bombs[i].PlayerOwner == 2)

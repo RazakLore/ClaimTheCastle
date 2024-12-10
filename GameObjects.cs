@@ -64,7 +64,7 @@ namespace ClaimTheCastle
             {
                 TriggerExplosion(gameTime);
                 IsExploded = true;
-                if (timeToDelete >= 1f)
+                if (timeToDelete >= 0.4f)
                     TimeToDie = true;           // Doesnt fix the problem
                 else
                     timeToDelete += (float)gameTime.ElapsedGameTime.TotalSeconds;
@@ -198,33 +198,33 @@ namespace ClaimTheCastle
 
     class GenericUnsafeTileClear
     {
-        private Point position;
+        public Point Position { get; private set; }
         private Tilemap _tileMap;
         private int explosionRadius;
         private int x, y;
-        public GenericUnsafeTileClear(Point Position, int explodeRadi, Tilemap tilemapPass, GameTime gameTime)
+        public GenericUnsafeTileClear(Point position, int explodeRadi, Tilemap tilemapPass, GameTime gameTime)
         {
-            position = Position;
+            Position = position;
             explosionRadius = explodeRadi;
             _tileMap = tilemapPass;
-            GetUnsafeTiles(position, 0, -1, gameTime);
-            GetUnsafeTiles(position, 0, 1, gameTime);
-            GetUnsafeTiles(position, -1, 0, gameTime);
-            GetUnsafeTiles(position, 1, 0, gameTime);
+            GetUnsafeTiles(0, -1, gameTime);
+            GetUnsafeTiles(0, 1, gameTime);
+            GetUnsafeTiles( -1, 0, gameTime);
+            GetUnsafeTiles(1, 0, gameTime);
         }
         
         public void ClearTileExecutor(GameTime gameTime)
         {
-            ClearUnsafeTiles(position, 0, -1, gameTime);
-            ClearUnsafeTiles(position, 0, 1, gameTime);
-            ClearUnsafeTiles(position, -1, 0, gameTime);
-            ClearUnsafeTiles(position, 1, 0, gameTime);
+            ClearUnsafeTiles(0, -1, gameTime);
+            ClearUnsafeTiles(0, 1, gameTime);
+            ClearUnsafeTiles(-1, 0, gameTime);
+            ClearUnsafeTiles(1, 0, gameTime);
         }
 
-        private void GetUnsafeTiles(Point bombPosition, int dx, int dy, GameTime gameTime)
+        private void GetUnsafeTiles(int dx, int dy, GameTime gameTime)
         {
-            x = bombPosition.X;
-            y = bombPosition.Y;
+            x = Position.X;
+            y = Position.Y;
 
             for (int i = 0; i < explosionRadius; i++)      // For every tile before 4
             {
@@ -253,10 +253,10 @@ namespace ClaimTheCastle
                 }
             }
         }
-        private void ClearUnsafeTiles(Point bombPosition, int dx, int dy, GameTime gameTime)
+        private void ClearUnsafeTiles(int dx, int dy, GameTime gameTime)
         {
-            x = bombPosition.X;
-            y = bombPosition.Y;
+            x = Position.X;
+            y = Position.Y;
 
             for (int i = 0; i < explosionRadius; i++)      // For every tile before 4
             {
