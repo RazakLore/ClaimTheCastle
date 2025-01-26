@@ -3,6 +3,9 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System.Diagnostics;
 using System;
+using System.Collections.Generic;
+using static System.Reflection.Metadata.BlobBuilder;
+using System.Reflection.Metadata;
 
 namespace ClaimTheCastle
 {
@@ -16,12 +19,9 @@ namespace ClaimTheCastle
         private float m_moveChangeTimer;    // Timer for moving
         private float m_timeUntilBomb;      // Timer for placing bombs
         private int randomBombThreshold;
+        private int m_health;
+        private bool m_isDead;
 
-        private float m_intoMazeTimer;
-        private float m_maxIntoMazeTimer = 0.5f;
-
-        private Point tileDestination;
-        private Rectangle playerCollision;
         private Direction _prevAiDrection = Direction.North;
         private float _prevAiDrectionXInc = 0.0f;
         private float _prevAiDrectionYInc = -2.0f;
@@ -29,55 +29,146 @@ namespace ClaimTheCastle
         private bool isPlayer;
         public bool isDeciding { get; set; }
         public bool placingBomb { get; set; }
-        private Tilemap _tileMap;   // Reference to the tile map
+        public Tilemap _tileMap { get; set; }   // Reference to the tile map
+        private Vector2 closestBombPosition;
+        private int controlType;
+        public int AssignedGamepadIndex { get; set; }
+
+        public bool IsPlayer
+        {
+            get { return isPlayer; }
+            set { isPlayer = value; }
+        }
+        public int ControlType
+        {
+            get { return controlType; }
+            set { controlType = value; }
+        }
+        public int HealthPoints
+        {
+            get { return m_health; }
+            set { m_health = value; }
+        }
+        public bool IsDead
+        {
+            get { return m_isDead; }
+            set { m_isDead = value; }
+        }
 
         //AI state management
         private AI_States currentState = AI_States.Exploring;    // Initial state is Idle
 
-        public Player(Vector2 startPos, Texture2D txr, int frameCount, int fps, bool isThisPlayer/*, Tilemap tileMap*/) : base(startPos, txr, frameCount, fps)
+        public Player(Vector2 startPos, Texture2D txr, int frameCount, int fps, bool isThisPlayer, int ctrlType, Tilemap currMap) : base(startPos, txr, frameCount, fps)
         {
             MaxBombs = 2;
             BombsPlaced = 0;
-            m_moveTrigger = 0.06f;
+            m_moveTrigger = 0.03f;
             m_moveCounter = 0;
             m_moveChangeTimer = 0;
             m_maxMoveTime = 5;
+            m_health = 3;
+            m_isDead = false;
             isPlayer = isThisPlayer;
-            tileDestination = Position.ToPoint();
-            playerCollision = new Rectangle((int)Position.X, (int)Position.Y + 1, 14, 14);
             randomBombThreshold = Game1.RNG.Next(3, 10);
+            controlType = ctrlType;
+            _tileMap = currMap;
         }
 
-        public void Update(GameTime gameTime, Tilemap currentMap, KeyboardState kb, KeyboardState kbOld)
+        public void Update(GameTime gameTime, Tilemap currentMap, List<Bomb> bombs, KeyboardState kb, KeyboardState kbOld, GamePadState gp, GamePadState gpOld)
         {
             if (isPlayer)
             {
-                if (kb.IsKeyDown(Keys.W))
+                if (controlType == 0)                                                   // Keyboard WASD
                 {
-                    if (currentMap.IsWalkable(new Vector2((int)Position.X, (int)Position.Y - 2)))
+                    if (kb.IsKeyDown(Keys.W))
                     {
-                        Move(Direction.North);
+                        if (currentMap.IsWalkable(new Vector2((int)Position.X, (int)Position.Y - 2)))
+                        {
+                            Move(Direction.North);
+                        }
+                    }
+                    if (kb.IsKeyDown(Keys.S))
+                    {
+                        if (currentMap.IsWalkable(new Vector2((int)Position.X, (int)Position.Y + 2)))
+                        {
+                            Move(Direction.South);
+                        }
+                    }
+                    if (kb.IsKeyDown(Keys.A))
+                    {
+                        if (currentMap.IsWalkable(new Vector2((int)Position.X - 2, (int)Position.Y)))
+                        {
+                            Move(Direction.West);
+                        }
+                    }
+                    if (kb.IsKeyDown(Keys.D))
+                    {
+                        if (currentMap.IsWalkable(new Vector2((int)Position.X + 2, (int)Position.Y)))
+                        {
+                            Move(Direction.East);
+                        }
                     }
                 }
-                if (kb.IsKeyDown(Keys.S))
+                if (controlType == 1)                                                   // Keyboard Arrows
                 {
-                    if (currentMap.IsWalkable(new Vector2((int)Position.X, (int)Position.Y + 2)))
+                    if (kb.IsKeyDown(Keys.Up))
                     {
-                        Move(Direction.South);
+                        if (currentMap.IsWalkable(new Vector2((int)Position.X, (int)Position.Y - 2)))
+                        {
+                            Move(Direction.North);
+                        }
+                    }
+                    if (kb.IsKeyDown(Keys.Down))
+                    {
+                        if (currentMap.IsWalkable(new Vector2((int)Position.X, (int)Position.Y + 2)))
+                        {
+                            Move(Direction.South);
+                        }
+                    }
+                    if (kb.IsKeyDown(Keys.Left))
+                    {
+                        if (currentMap.IsWalkable(new Vector2((int)Position.X - 2, (int)Position.Y)))
+                        {
+                            Move(Direction.West);
+                        }
+                    }
+                    if (kb.IsKeyDown(Keys.Right))
+                    {
+                        if (currentMap.IsWalkable(new Vector2((int)Position.X + 2, (int)Position.Y)))
+                        {
+                            Move(Direction.East);
+                        }
                     }
                 }
-                if (kb.IsKeyDown(Keys.A))
+                if (controlType == 2)                                                   // Gamepad
                 {
-                    if (currentMap.IsWalkable(new Vector2((int)Position.X - 2, (int)Position.Y)))
+                    if (gp.DPad.Up == ButtonState.Pressed)
                     {
-                        Move(Direction.West);
+                        if (currentMap.IsWalkable(new Vector2((int)Position.X, (int)Position.Y - 2)))
+                        {
+                            Move(Direction.North);
+                        }
                     }
-                }
-                if (kb.IsKeyDown(Keys.D))
-                {
-                    if (currentMap.IsWalkable(new Vector2((int)Position.X + 2, (int)Position.Y)))
+                    if (gp.DPad.Down == ButtonState.Pressed)
                     {
-                        Move(Direction.East);
+                        if (currentMap.IsWalkable(new Vector2((int)Position.X, (int)Position.Y + 2)))
+                        {
+                            Move(Direction.South);
+                        }
+                    }
+                    if (gp.DPad.Left == ButtonState.Pressed)
+                    {
+                        if (currentMap.IsWalkable(new Vector2((int)Position.X - 2, (int)Position.Y)))
+                        {
+                            Move(Direction.West);
+                        }
+                    }
+                    if (gp.DPad.Right == ButtonState.Pressed)
+                    {
+                        if (currentMap.IsWalkable(new Vector2((int)Position.X + 2, (int)Position.Y)))
+                        {
+                            Move(Direction.East);
+                        }
                     }
                 }
             }
@@ -86,27 +177,16 @@ namespace ClaimTheCastle
                 m_moveChangeTimer += (float)gameTime.ElapsedGameTime.TotalSeconds; // Timer for deciding to change direction
                 m_moveCounter += (float)gameTime.ElapsedGameTime.TotalSeconds; // Timer for controlling movement intervals
 
-                bool isBombNearby = CheckBombProximity();
-
-                //if (isBombNearby)
-                //    currentState = AI_States.RunningAway;
-                //else if (DetectPlayerNearby())
-                //    currentState = AI_States.SeekingPlayer;
-                //else if (m_moveCounter > m_moveTrigger)
-                //    currentState = AI_States.Exploring;
-                //else
-                //    currentState = AI_States.Idle;
-
                 switch (currentState)
                 {
                     case AI_States.Idle:
                         HandleIdleState();
                         break;
                     case AI_States.Exploring:
-                        HandleExploringState(gameTime, currentMap);
+                        HandleExploringState(gameTime);
                         break;
                     case AI_States.RunningAway:
-                        HandleFleeingState();
+                        HandleFleeingState(gameTime, bombs);
                         break;
                     case AI_States.SeekingPlayer:
                         HandleSeekingState();
@@ -120,10 +200,10 @@ namespace ClaimTheCastle
         private void HandleIdleState()
         {
             // Stand idle, fallback behaviour, do not place bombs, switch out to another behaviour when possible
-            currentState = AI_States.Exploring;
+            //currentState = AI_States.Exploring;
         }
 
-        private void HandleExploringState(GameTime gameTime, Tilemap currentMap)
+        private void HandleExploringState(GameTime gameTime)
         {
             Direction moveDir;
             bool canMove = true;
@@ -141,11 +221,8 @@ namespace ClaimTheCastle
                 {
                     isDeciding = true;
                     m_timeUntilBomb = 0;
-                    randomBombThreshold = Game1.RNG.Next(3, 10);
+                    randomBombThreshold = Game1.RNG.Next(2, 5);
                 }
-
-                //Timer for moving into maze - this might be redundant
-                m_intoMazeTimer += (float)gameTime.ElapsedGameTime.TotalSeconds;
 
                 float newX = Position.X;
                 float newY = Position.Y;
@@ -168,7 +245,7 @@ namespace ClaimTheCastle
                 int idx = Game1.RNG.Next(0, 4) * 3;
 
                 // Check if the AI is stuck and just keep moving in its previous direction
-                if (currentMap.IsWalkable(newPoint))
+                if (_tileMap.IsWalkable(newPoint))
                 {
                     Game1.GConsole.Log("Using prev dir");
                     // Skip the loop if we can still move the other direction
@@ -192,9 +269,9 @@ namespace ClaimTheCastle
                     newPoint.X = possibleMoves[i];
                     newPoint.Y = possibleMoves[i + 1];
                     moveDir = (Direction)possibleMoves[i + 2];
-                    if (currentMap.IsWalkable(newPoint))
+                    if (_tileMap.IsWalkable(newPoint))
                     {
-                        if (currentMap.IsDanger(newPoint))
+                        if (_tileMap.IsDanger(newPoint))
                         {
                             currentState = AI_States.RunningAway;
                             break;
@@ -220,10 +297,45 @@ namespace ClaimTheCastle
             
         }
         
-        private void HandleFleeingState()
+        private void HandleFleeingState(GameTime gameTime, List<Bomb> bombs)
         {
             // Run away from bombs
-            Position = new Vector2(100, 100);
+            // MOVE COUNTER THEN CHECK BOMB COUNT ISNT 0
+            if (m_moveCounter > m_moveTrigger)
+            {
+                closestBombPosition = CheckBombProximity(Position, bombs);
+
+                m_moveCounter = 0;
+
+                m_moveChangeTimer = 2;
+
+                if (closestBombPosition.Y > Position.Y && (_tileMap.IsWalkable(new Vector2((int)Position.X, (int)Position.Y - 2))))
+                {
+                    Move(Direction.North);
+                    if (!_tileMap.IsDanger(new Vector2((int)Position.X, (int)Position.Y - 2)))
+                        currentState = AI_States.Exploring;
+                }
+                else if (closestBombPosition.Y < Position.Y && _tileMap.IsWalkable(new Vector2((int)Position.X, (int)Position.Y + 2)))
+                {
+                    Move(Direction.South);
+                    if (!_tileMap.IsDanger(new Vector2((int)Position.X, (int)Position.Y + 2)))
+                        currentState = AI_States.Exploring;
+                }
+                else if (closestBombPosition.X < Position.X && _tileMap.IsWalkable(new Vector2((int)Position.X - 2, (int)Position.Y)))
+                {
+                    Move(Direction.West);
+                    if (!_tileMap.IsDanger(new Vector2((int)Position.X - 2, (int)Position.Y)))
+                        currentState = AI_States.Exploring;
+                }
+                else if (closestBombPosition.X > Position.X && _tileMap.IsWalkable(new Vector2((int)Position.X + 2, (int)Position.Y)))
+                {
+                    Move(Direction.East);
+                    if (!_tileMap.IsDanger(new Vector2((int)Position.X + 2, (int)Position.Y)))
+                        currentState = AI_States.Exploring;
+                }
+                else
+                    currentState = AI_States.Exploring;
+            }
         }
 
         private void HandleSeekingState()
@@ -236,9 +348,25 @@ namespace ClaimTheCastle
         {
             return false; //Placeholder
         }
-        private bool CheckBombProximity()
+        private Vector2 CheckBombProximity(Vector2 aiPos, List<Bomb> bombPositions)
         {
-            return false;   //Placeholder
+            if (bombPositions.Count == 0)       // If there are no bombs in the list
+                return Vector2.Zero;            // Return a default 0, 0
+
+            Bomb closestBomb = bombPositions[0];    // Set the closest bomb to first in the list
+            float minDist = float.MaxValue;         
+
+            foreach (Bomb bomb in bombPositions)
+            {
+                float distance = Math.Abs(aiPos.X - bomb.Position.X) + Math.Abs(aiPos.Y - bomb.Position.Y);
+
+                if (distance < minDist)
+                {
+                    minDist = distance;
+                    closestBomb = bomb;
+                }
+            }
+            return closestBomb.Position.ToVector2();
         }
     }
 

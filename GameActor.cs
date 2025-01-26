@@ -53,7 +53,7 @@ namespace ClaimTheCastle
         {
             m_updateTrigger += (float)gt.ElapsedGameTime.TotalSeconds * m_fps;
 
-            if (m_updateTrigger >= 1)
+            if (m_updateTrigger >= 5f)
             {
                 m_updateTrigger = 0;
 
@@ -72,19 +72,19 @@ namespace ClaimTheCastle
             switch (moveDir)
             {
                 case Direction.North:
-                    m_position.Y -= 2;
+                    m_position.Y -= 1;
                     break;
 
                 case Direction.South:
-                    m_position.Y += 2;
+                    m_position.Y += 1;
                     break;
 
                 case Direction.East:
-                    m_position.X += 2;
+                    m_position.X += 1;
                     break;
 
                 case Direction.West:
-                    m_position.X -= 2;
+                    m_position.X -= 1;
                     break;
             }
         }

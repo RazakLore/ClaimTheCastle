@@ -21,24 +21,31 @@ namespace ClaimTheCastle
     {
         public int ExplosionRadius { get; set; }
         public float TimeToExplode { get; set; }
-        private float timeToDelete;
         public bool IsExploded { get; set; }
         public bool TimeToDie { get; set; }
         public Rectangle CauldronCollision { get; set; }
         public Rectangle?[] DangerTiles { get; set; }
         private Texture2D m_txr;
+        private Rectangle m_srcRect = new Rectangle(0, 0, 16, 17);
+        private float m_countdownTimer = 0.8f;
+        private float m_threshold;
 
-        private Tilemap _tileMap;   //Reference to the tile map
+        public Tilemap _tileMap { get; }   //Reference to the tile map
 
         private int playerOwner;
         public int PlayerOwner { get { return playerOwner; } }
         public int x { get; set; }
         public int y { get; set; }
         private List<GenericExplosion> genericExplosions;
+        private List<DangerSign> dangerSigns;
+        private Texture2D dangerTex;
+        private List<GenericExplosionAnimation> explosionAnimations;
+        private Texture2D explodeAnimSpritesheet;
         private int oldTile;
-        public HashSet<Point> UnsafeTiles { get; private set; }
 
-        public Bomb(Point position, int explosionRadius, float timeToExplode, Tilemap tileMap, Texture2D cauldron, int playerOwn, List<GenericExplosion> explodeTrigger, List<GenericUnsafeTileClear> dangerTrigger, GameTime gameTime) : base(position)
+        public Bomb(Point position, int explosionRadius, float timeToExplode, Tilemap tileMap, Texture2D cauldron, int playerOwn,
+            List<GenericExplosion> explodeTrigger, List<GenericUnsafeTileClear> dangerTrigger, List<GenericExplosionAnimation> genExplodeAnims, Texture2D explosionSpritesheet,
+            List<DangerSign> danSigns, Texture2D danTxr, GameTime gameTime) : base(position)
         {
             Position = position;
             ExplosionRadius = explosionRadius;
@@ -51,26 +58,45 @@ namespace ClaimTheCastle
             CauldronCollision = new Rectangle(position.X, position.Y, 16, 16);
             DangerTiles = new Rectangle?[7 * 7];
             genericExplosions = explodeTrigger;
-            UnsafeTiles = new HashSet<Point>();
             dangerTrigger.Add(new GenericUnsafeTileClear(Position, ExplosionRadius, _tileMap, gameTime));
+            dangerSigns = danSigns;
+            dangerTex = danTxr;
+            explosionAnimations = genExplodeAnims;
+            explodeAnimSpritesheet = explosionSpritesheet;
+            m_threshold = timeToExplode / 10;
         }
 
         public void Update(GameTime gameTime)
         {
-            //if (IsExploded)
-                //return;             //Break out the update loop here
+            if (IsExploded)
+                return;             //Break out the update loop here, otherwise it explodes all bricks in a line
+
+            FindWalls(Position, 0, -1, gameTime);
+            FindWalls(Position, 0, 1, gameTime);
+            FindWalls(Position, -1, 0, gameTime);
+            FindWalls(Position, 1, 0, gameTime);
+            
 
             if (TimeToExplode <= 0)
             {
                 TriggerExplosion(gameTime);
                 IsExploded = true;
-                if (timeToDelete >= 0.4f)
-                    TimeToDie = true;           // Doesnt fix the problem
-                else
-                    timeToDelete += (float)gameTime.ElapsedGameTime.TotalSeconds;
+                TimeToDie = true;           
             }
             else
                 TimeToExplode -= (float)gameTime.ElapsedGameTime.TotalSeconds;
+            
+            if (m_countdownTimer < m_threshold)
+            {
+                m_srcRect.X += 16;
+                m_countdownTimer = m_threshold * 2;
+                m_threshold = TimeToExplode / 10;
+            }
+            else
+                m_countdownTimer -= (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+            if (m_srcRect.X > m_txr.Width - 16)
+                m_srcRect.X = 0;
 
         }
 
@@ -82,7 +108,7 @@ namespace ClaimTheCastle
         private void Explode(Point bombPosition, GameTime gameTime)
         {
             Game1.GConsole.Warn($"Bomb detonated at {bombPosition}!");
-
+            explosionAnimations.Add(new GenericExplosionAnimation(explodeAnimSpritesheet, bombPosition));
             // Call function to handle the explosion in all directions
             ExplodeInDirection(bombPosition, 0, -1, gameTime);                    //Up
             ExplodeInDirection(bombPosition, 0, 1, gameTime);                     //Down
@@ -111,42 +137,60 @@ namespace ClaimTheCastle
                 int tileType = _tileMap.GetTile(new Point(x, y));       //Get the type of tile the blast is on
                 Game1.GConsole.Log($"Tile at ({x}, {y}) is {tileType}");   // Log the type of tile
 
-                //UnsafeTiles.Add(new Point(x, y));           // Add this tile to the hash set so that it is marked as unsafe
-
-                if (tileType == 2 || tileType == 10 || tileType == 18)   //Look for tiles of type 2
+                if (tileType == 2 || tileType == 10 || tileType == 18)   //Look for tiles of type 2, 10 or 18 as breakable walls
                 {
                     Game1.GConsole.Log($"Destroying tile at ({x}, {y})!");
-
                     oldTile = _tileMap.TileData[x, y];                                                  //Remember what kind of wall this is
                     _tileMap.TileData[x, y] = 24;                                                       //Set the wall to the first animation frame
                     genericExplosions.Add(new GenericExplosion(new Point(x, y), _tileMap, oldTile));    //Add the explosion logic to the generic list
-
                     break;                                                                              //Stop the explosion in this direction as it has hit a wall
                 }
 
-                if (tileType == 1 || tileType == 9 || tileType == 17)   //Solid wall
+                if (tileType == 1 || tileType == 4 || tileType == 9 || tileType == 17 || tileType == 23)   //Solid wall
                 {
                     Game1.GConsole.Log($"Explosion stopped at solid wall at ({x}, {y})");
                     break;                          //Stop the explosion in this direction as it has hit a wall
                 }
 
-                
-                //_tileMap.TileData[x, y] = 4;        // Same for lava
+                //If it hasn't been stopped by any walls and is on the map, spawn the tile explosion
+                explosionAnimations.Add(new GenericExplosionAnimation(explodeAnimSpritesheet, new Point(x, y)));
+            }
+        }
 
-                //Collision with other bombs to instantly explode them when hit with this explosion
+        private void FindWalls(Point bombPosition, int dx, int dy, GameTime gameTime)
+        {
+            x = bombPosition.X;
+            y = bombPosition.Y;
+
+            for (int i = 0; i < ExplosionRadius; i++)      // For every tile before 4
+            {
+                x += dx;    //Head 1 in targeted direction
+                y += dy;
+
+                //Stop the explosion if it goes out of bounds
+                if (!_tileMap.IsOnMap(new Point(x, y)))     //If explosion is not on a map tile
+                    break;
+
+                int tileType = _tileMap.GetTile(new Point(x, y));       //Get the type of tile the blast is on
+
+                if (tileType == 2 || tileType == 10 || tileType == 18)   //Look for tiles of type 2, 10 or 18 as breakable walls
+                {
+                     dangerSigns.Add(new DangerSign(dangerTex, new Point(x, y), TimeToExplode));
+                    break;                                                                              //Stop the explosion in this direction as it has hit a wall
+                }
+
+                if (tileType == 1 || tileType == 4 || tileType == 9 || tileType == 17 || tileType == 23)   //Solid wall
+                {
+                    dangerSigns.Add(new DangerSign(dangerTex, new Point(x, y), TimeToExplode));
+                    break;                          //Stop the explosion in this direction as it has hit a wall
+                }
             }
         }
 
         public void Draw(SpriteBatch sb)
         {
-            //if (!_tileMap.animateExplosion)
-                sb.Draw(m_txr, new Vector2(Position.X * 16, Position.Y * 16), Color.White);
-            //else
-               //sb.Draw(m_txr, new Vector2(Position.X * 16, Position.Y * 16), Color.Red);
+            sb.Draw(m_txr, new Vector2(Position.X * 16, Position.Y * 16), m_srcRect, Color.White);
         }
-
-        
-        
     }
 
     class GenericExplosion
@@ -200,9 +244,10 @@ namespace ClaimTheCastle
     {
         public Point Position { get; private set; }
         private Tilemap _tileMap;
+        //private Bomb bombOwner;
         private int explosionRadius;
         private int x, y;
-        public GenericUnsafeTileClear(Point position, int explodeRadi, Tilemap tilemapPass, GameTime gameTime)
+        public GenericUnsafeTileClear(Point position, int explodeRadi, Tilemap tilemapPass/*, Bomb owner*/, GameTime gameTime)
         {
             Position = position;
             explosionRadius = explodeRadi;
@@ -239,16 +284,12 @@ namespace ClaimTheCastle
                 if (tileType == 2 || tileType == 10 || tileType == 18)   //Look for tiles of type 2
                     break;
 
-                if (tileType == 1 || tileType == 9 || tileType == 17)   //Solid wall
+                if (tileType == 1 || tileType == 4 || tileType == 9 || tileType == 17 || tileType == 23)   //Solid wall
                     break;
 
-                if (tileType == 0)
-                    _tileMap.TileData[x, y] = 4;        // If dungeon floor, set to dungeon floor copy but its unsafe!!
-                if (tileType == 8)
-                    _tileMap.TileData[x, y] = 12;       // Same for ice
-                if (tileType == 16 || tileType == 19)
+                if (tileType == 0 || tileType == 3 || tileType == 8 || tileType == 11 || tileType == 16 || tileType == 19)
                 {
-                    _tileMap.TileData[x, y] = 4;        // Just a visual tracker to see what tiles are marked.
+                    //_tileMap.TileData[x, y] = 4;        // Just a visual tracker to see what tiles are marked.
                     _tileMap._dangerTiles[x * 17 + y] = new Rectangle(x * 16, y * 16, 16, 16);
                 }
             }
@@ -271,15 +312,111 @@ namespace ClaimTheCastle
                 if (tileType == 2 || tileType == 10 || tileType == 18)   //Look for tiles of type 2
                     break;
 
-                if (tileType == 1 || tileType == 9 || tileType == 17)   //Solid wall
+                if (tileType == 1 || tileType == 4 || tileType == 9 || tileType == 17 || tileType == 23)   //Solid wall
                     break;
 
                 if (_tileMap.TileData[x, y] == 4)
                     _tileMap.TileData[x, y] = 16;           // Instead of this if loop, add an animation in here instead
                 _tileMap._dangerTiles[x * 17 + y] = null;   // Clear this tile of danger rectangle
+                // This can be made into a function in tilemap class so that danger tiles does not have to be get or set public.
             }
         }
     }
+
+    class GenericExplosionAnimation
+    {
+        private Texture2D m_spriteSheet;
+        private Point m_pos;
+        private Rectangle m_srcRect;
+        private float m_nextFrame = 0.1f;
+        public bool TimeToDie { get; private set; }
+        public GenericExplosionAnimation(Texture2D txr, Point position)
+        {
+            m_spriteSheet = txr;
+            m_pos = position;
+            m_srcRect = new Rectangle(0, 0, 16, 16);
+        }
+
+        public void Animate(GameTime gt)
+        {
+            if (m_nextFrame < 0)
+            {
+                m_srcRect.X += 16;
+                m_nextFrame = 0.1f;
+            }
+            else
+                m_nextFrame -= (float)gt.ElapsedGameTime.TotalSeconds;
+
+            if (m_srcRect.X > m_spriteSheet.Width)
+                TimeToDie = true;
+        }
+
+        public void Draw(SpriteBatch sb)
+        {
+            sb.Draw(m_spriteSheet, new Vector2(m_pos.X * 16, m_pos.Y * 16), m_srcRect, Color.White);
+        }
+    }
+
+    class DangerSign : GameObject
+    {
+        private Texture2D m_tex;
+        private Point m_pos;
+        private float m_lifespan;
+        public bool TimeToDie { get; private set; }
+        public DangerSign(Texture2D texture, Point position, float bombTilDie) : base(position)
+        {
+            m_tex = texture;
+            m_pos = position;
+            m_lifespan = bombTilDie;
+            TimeToDie = false;
+        }
+        public void Countdown(GameTime gt)
+        {
+            m_lifespan -= (float)gt.ElapsedGameTime.TotalSeconds;
+            if (m_lifespan < 0)
+                TimeToDie = true;
+        }
+
+        public void Draw(SpriteBatch sb)
+        {
+            sb.Draw(m_tex, new Vector2(m_pos.X * 16, m_pos.Y * 16), Color.White);
+        }
+    }
+
+    class TeleportAnimation
+    {
+        private Texture2D m_txr;
+        private Point m_pos;
+        private Rectangle m_srcRect;
+        private float m_nextFrame = 0.1f;
+        public bool TimeToDie { get; private set; }
+        public TeleportAnimation(Texture2D txr, Point pos)
+        {
+            m_txr = txr;
+            m_pos = pos;
+            m_srcRect = new Rectangle(0, 0, 16, 16);
+        }
+
+        public void Animate(GameTime gt)
+        {
+            if (m_nextFrame < 0)
+            {
+                m_srcRect.X += 16;
+                m_nextFrame = 0.1f;
+            }
+            else
+                m_nextFrame -= (float)gt.ElapsedGameTime.TotalSeconds;
+
+            if (m_srcRect.X > m_txr.Width)
+                TimeToDie = true;
+        }
+
+        public void Draw(SpriteBatch sb)
+        {
+            sb.Draw(m_txr, new Vector2(m_pos.X, m_pos.Y), m_srcRect, Color.White);
+        }
+    }
+
 
     class Powerups : GameObject
     {

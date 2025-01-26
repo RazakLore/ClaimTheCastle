@@ -1,0 +1,200 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1" MembersFormat="NameAndType">
+  <Class Name="ClaimTheCastle.Game1">
+    <Position X="14" Y="0.5" Width="1.5" />
+    <NestedTypes>
+      <Struct Name="ClaimTheCastle.Game1.Cam2D" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Game1.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Struct>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>AAQBBQCkBAAgAwMEBAyCwAABUBEgQgASDKQAKog2AEc=</HashCode>
+      <FileName>Game1.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ClaimTheCastle.GameActor">
+    <Position X="10.75" Y="5.5" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAQAAAKEQAgAgAAAAKAAAAIBAAAAAAAAQAABAAAA=</HashCode>
+      <FileName>GameActor.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ClaimTheCastle.GameConsole">
+    <Position X="17.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>EASAgAABggAAA4AAAAAEAQAABAlAAAGpADAIAAgQAAU=</HashCode>
+      <FileName>GameConsole.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ClaimTheCastle.GameObject">
+    <Position X="6.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GameObjects.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ClaimTheCastle.Bomb">
+    <Position X="5.25" Y="2.75" Width="3.75" />
+    <TypeIdentifier>
+      <HashCode>gCQAgQAKjADgAgAAgCAAAAwAAAAQAABABABwIAAIAAg=</HashCode>
+      <FileName>GameObjects.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ClaimTheCastle.GenericExplosion">
+    <Position X="21" Y="3.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAACAAAAAAgCoAAgAAIAEAAAAAAAA=</HashCode>
+      <FileName>GameObjects.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ClaimTheCastle.GenericUnsafeTileClear">
+    <Position X="19.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AgAAAAAAAAAAAAAgAIAABAAAAAAAAAAAAAhgAAAIAAA=</HashCode>
+      <FileName>GameObjects.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ClaimTheCastle.GenericExplosionAnimation">
+    <Position X="15.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAgQAAAAAgAgAAAAAAAAQQAAAAAAAAAIAAAAAAAAA=</HashCode>
+      <FileName>GameObjects.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ClaimTheCastle.DangerSign">
+    <Position X="2.75" Y="2.75" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAgAgAAAAAQAAARAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GameObjects.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ClaimTheCastle.TeleportAnimation">
+    <Position X="21" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAgQAAAAAgAgAAAAAAAAQQAAAAAAAAAIAAAAAAAAA=</HashCode>
+      <FileName>GameObjects.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ClaimTheCastle.Powerups">
+    <Position X="9.75" Y="2.75" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAAAAAAAAgAAAAAAAAAQAAAAAAAAAAAAAAAIAAA=</HashCode>
+      <FileName>GameObjects.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ClaimTheCastle.StaticGraphic">
+    <Position X="2.75" Y="10.5" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAQAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Graphics.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ClaimTheCastle.AnimatedGraphic">
+    <Position X="2.5" Y="13" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAEAEAAAAAAAQAAAgAAA=</HashCode>
+      <FileName>Graphics.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ClaimTheCastle.Player">
+    <Position X="10.5" Y="10.5" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>JCwEAAEAQAYAAAAAMAAAMQQBIggFBEAJAAAAAALMABA=</HashCode>
+      <FileName>Player.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ClaimTheCastle.TextureAtlas">
+    <Position X="15.75" Y="3.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAgAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAIAEQAAAAA=</HashCode>
+      <FileName>TextureAtlas.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ClaimTheCastle.Tilemap">
+    <Position X="19.25" Y="4" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AQAICAAAAAAIAgAAAAIAAAIAAAIAgpAAQAABAAJAAAA=</HashCode>
+      <FileName>Tilemap.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ClaimTheCastle.UserInterface">
+    <Position X="21" Y="7.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AARYABUAAJEAAggAhgAAEBACAgAAAIEAAAAAAASAAAE=</HashCode>
+      <FileName>UserInterface.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Struct Name="ClaimTheCastle.ConsoleEntry">
+    <Position X="12.25" Y="1.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAIAAAA=</HashCode>
+      <FileName>GameConsole.cs</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Enum Name="ClaimTheCastle.GameStates">
+    <Position X="17.25" Y="9.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAEAAAAEAAAAAAAAAAAAAAAAQAAAAAAgBAAAA=</HashCode>
+      <FileName>Game1.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="ClaimTheCastle.LevelSelectPreview">
+    <Position X="17.25" Y="11" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAQAAAAAAAAQAA=</HashCode>
+      <FileName>Game1.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="ClaimTheCastle.Direction">
+    <Position X="15.75" Y="9.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AACAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAABAAQ=</HashCode>
+      <FileName>GameActor.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="ClaimTheCastle.ConsoleLocation">
+    <Position X="18.75" Y="9.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AgAAAAAoAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAEA=</HashCode>
+      <FileName>GameConsole.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="ClaimTheCastle.AI_States">
+    <Position X="15.75" Y="10.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAABAAAAAAIAAAAAAAAAAAAAAAAAAAAAAABCAAAA=</HashCode>
+      <FileName>Player.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="ClaimTheCastle.tileState">
+    <Position X="15.75" Y="12.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAABAAAAAIAAAAAAAAAgAAAAAAAA=</HashCode>
+      <FileName>Tilemap.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="ClaimTheCastle.Interface">
+    <Position X="18.75" Y="11" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAEAAAAEAAAAAAAAAAAAAAAAQAAAAAAgAAAAA=</HashCode>
+      <FileName>UserInterface.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="ClaimTheCastle.TitleButtonState">
+    <Position X="18.75" Y="12.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAIAAAAABAAAA=</HashCode>
+      <FileName>UserInterface.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="ClaimTheCastle.ArrowState">
+    <Position X="17.25" Y="12.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>EAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>UserInterface.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

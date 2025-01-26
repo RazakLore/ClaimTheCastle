@@ -100,9 +100,9 @@ namespace ClaimTheCastle
                     {
                         do
                         {
-                          //_tileData[j, i] = Game1.RNG.Next(0, 3);         //Roughly randomise the layout of a map
-                          if (_tileData[j, i] == 1)
-                              _tileData[j, i] = 2;
+                            _tileData[j, i] = Game1.RNG.Next(0, 3);         //Roughly randomise the layout of a map
+                            if (_tileData[j, i] == 1)
+                                _tileData[j, i] = 2;
                         }
                         while (_tileData[j, i] == 1);                       //Skips the solid blocks
                     }
@@ -110,7 +110,7 @@ namespace ClaimTheCastle
                     {
                         do
                         {
-                            //_tileData[j, i] = Game1.RNG.Next(8, 11);      //Roughly randomise the layout of a map
+                            _tileData[j, i] = Game1.RNG.Next(8, 11);      //Roughly randomise the layout of a map
                             if (_tileData[j, i] == 9)
                                 _tileData[j, i] = 10;
                         }
@@ -188,7 +188,7 @@ namespace ClaimTheCastle
                     destination.Y = _tileSize * j;
                     sb.Draw(ta.Texture, Location + destination, ta.SourceRectangles[currentTile], Color.White);
                     //sb.Draw(ta.Texture, Location + destination, _realTiles[currentTile], Color.Red);
-                    //sb.DrawString(Game1.debug, _tileData[i, j].ToString(), Location + destination, Color.White);
+                    //sb.DrawString(Game1.debug, _tileData[i, j].ToString(), Location + destination, Color.White);  // Supposed to show collision rectangles for debugging, very broken!
                 }
             }
         }
@@ -232,6 +232,72 @@ namespace ClaimTheCastle
             int tileX = (int)Math.Floor(playerPos.X / _tileSize);
             int tileY = (int)Math.Floor(playerPos.Y / _tileSize);
             return new Point(tileX, tileY);
+        }
+
+        public void RandomiseDestructibleWalls(string mapSource)
+        {
+
+            _realTiles = null;          // Must reset the current rectangles? to have the new collision maps for level changes
+            _dangerTiles = null; 
+            var reader = new StreamReader(File.OpenRead(mapSource + ".txt"));
+
+            int i = 0, j = 0;
+
+            _realTiles = new Rectangle?[Dimensions * Dimensions];
+            _dangerTiles = new Rectangle?[Dimensions * Dimensions];
+            Game1.GConsole.Log("Building Tilemap...");
+            while (!reader.EndOfStream)
+            {
+                var line = reader.ReadLine();
+                var values = line.Split(',');
+                j = 0;
+                foreach (var val in values)
+                {
+                    _tileData[j, i] = int.Parse(val);
+
+                    if (_tileData[j, i] == 0)
+                    {
+                        do
+                        {
+                            _tileData[j, i] = Game1.RNG.Next(0, 3);         //Roughly randomise the layout of a map
+                            if (_tileData[j, i] == 1)
+                                _tileData[j, i] = 2;
+                        }
+                        while (_tileData[j, i] == 1 || _tileData[j, i] == 5);                       //Skips the solid blocks
+                    }
+                    if (_tileData[j, i] == 8)
+                    {
+                        do
+                        {
+                            _tileData[j, i] = Game1.RNG.Next(8, 11);      //Roughly randomise the layout of a map
+                            if (_tileData[j, i] == 9)
+                                _tileData[j, i] = 10;
+                        }
+                        while (_tileData[j, i] == 9);
+                    }
+                    if (_tileData[j, i] == 16)
+                    {
+                        do
+                        {
+                            _tileData[j, i] = Game1.RNG.Next(16, 19);       //Roughly randomise the layout of a map
+                            if (_tileData[j, i] == 17)
+                                _tileData[j, i] = 18;
+                        }
+                        while (_tileData[j, i] == 17);
+                    }
+                    if (_tileData[j, i] != 0 && _tileData[j, i] != 3 && _tileData[j, i] != 8 && _tileData[j, i] != 11 && _tileData[j, i] != 16 && _tileData[j, i] != 19 && _tileData[j, i] != 21 && _tileData[j, i] != 22)
+                    {
+                        int x = j * _tileSize;
+                        int y = i * _tileSize;
+                        _realTiles[i * Dimensions + j] = new Rectangle(x, y, _tileSize, _tileSize);
+                        Debug.WriteLine($"Tile ({i}, {j}) maps to index {_tileData}, Rectangle: {x}, {y}, {_tileSize}, {_tileSize}");
+                    }
+
+                    j++;
+                }
+                i++;
+            }
+            Game1.GConsole.Log("Read " + i + " lines and " + j + " entries per line into tilemap size + " + _tileData.Length);
         }
     }
 }
